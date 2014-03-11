@@ -27,6 +27,12 @@ class Sequence:
             pos+=1
             return self[pos - 1]
 
+    def __repr__(self):
+        return repr(self.sequence)
+
+    def __str__(self):
+        return str(self.sequence)
+
     @staticmethod
     def fromFile(filename):
         with open(filename) as f:
@@ -38,5 +44,5 @@ class Sequence:
                 if line[0] != '>':
                     data+=line.replace("\n","")
                 else:
-                    yield data
+                    yield Sequence(data)
                     data = ""
