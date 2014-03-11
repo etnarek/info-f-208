@@ -1,6 +1,6 @@
 class Sequence(list):
 
-    def __init__(self,*args):
+    def __init__(self, *args):
         list.__init__(self, *args)
 
     def __repr__(self):
@@ -15,10 +15,10 @@ class Sequence(list):
             data = ""
             line = f.readline()
             if line[0] != '>':
-                data+=line.strip("\n")
+                data += line.strip("\n")
             for line in f:
                 if line[0] != '>':
-                    data+=line.strip("\n")
+                    data += line.strip("\n")
                 else:
                     yield Sequence(data)
                     data = ""
