@@ -21,11 +21,11 @@ class Sequence:
         return self
 
     def __next__(self):
-        if self.pos > len(self):
-            return None
+        if self.pos < len(self):
+            self.pos+=1
+            return self[self.pos - 1]
         else:
-            pos+=1
-            return self[pos - 1]
+            raise StopIteration
 
     def __repr__(self):
         return repr(self.sequence)
