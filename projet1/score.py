@@ -36,7 +36,7 @@ class Score(dict):
         for i in sortList:
             string += i
             for j in sortList:
-                string += "{0:>4}".format(self[i,j])
+                string += "{0:>4}".format(self[i, j])
             string += "\n"
         return string
 
