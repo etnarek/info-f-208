@@ -31,12 +31,17 @@ class Score(dict):
         dict.__init__(*arg, **kw)
 
     def __repr__(self):
-        keys = list(self.keys())
-        # keys.sort()
-        string = ""
-        for i in filter(lambda x: x[0] == keys[0][0], keys):
-            string += i[1]
+        string = "    "
+        string += "   ".join(sortList) + "\n"
+        for i in sortList:
+            string += i
+            for j in sortList:
+                string += "{0:>4}".format(self[i,j])
+            string += "\n"
         return string
+
+    def __str__(self):
+        return repr(self)
 
     @staticmethod
     def fromFile(filename):
