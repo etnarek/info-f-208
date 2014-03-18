@@ -27,9 +27,6 @@ sortList = [
 
 class Score(dict):
 
-    def __int__(self, *arg, **kw):
-        dict.__init__(*arg, **kw)
-
     def __repr__(self):
         string = "    "
         string += "   ".join(sortList) + "\n"
