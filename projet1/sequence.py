@@ -1,4 +1,15 @@
+"""
+This module contain an abstract data type: Sequence
+which represent a sequence of amino acid used in bioinformatic.
+"""
+
+
 class Sequence(list):
+    """
+    This class is inherited from list and represent a list
+    of amino acid which can be used to calculate the alignment
+    of two sequences.
+    """
 
     def __repr__(self):
         return "".join(self)
@@ -8,6 +19,10 @@ class Sequence(list):
 
     @staticmethod
     def fromFile(filename):
+        """
+        This method take a path to a file containing a amino acid sequence
+        and generate Sequences from this file (generator).
+        """
         with open(filename) as f:
             data = ""
             line = f.readline()
