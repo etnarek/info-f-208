@@ -1,3 +1,7 @@
+"""
+This module contain an abstract data type: Score
+which represent a matrix (BLOSUM or PAM) used in bioinformatic.
+"""
 SORT_LIST = [
     'A',
     'R',
@@ -26,6 +30,11 @@ SORT_LIST = [
 
 
 class Score(dict):
+    """
+    This class is inherited from dict and represent a matrix 2*2.
+    This matrix serve to calculate score of an amino acid.
+    The wright type of matrix are PAM and BLOSUM.
+    """
 
     def __repr__(self):
         string = "    "
@@ -42,7 +51,11 @@ class Score(dict):
 
     @staticmethod
     def fromFile(filename):
-        matrice = Score()
+        """
+        This method take a path to a file containing a matrix
+        BLOSUM or PAM and return this matrix.
+        """
+        matrix = Score()
         with open(filename) as f:
             for line in f:
                 if line[0] == ' ':
@@ -51,5 +64,5 @@ class Score(dict):
                     head = line[0]
                     data = line[1:].split()
                     for i in range(len(data)):
-                        matrice[firstRaw[i], head] = data[i]
-        return matrice
+                        matrix[firstRaw[i], head] = data[i]
+        return matrix
