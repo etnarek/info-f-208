@@ -1,4 +1,4 @@
-sortList = [
+SORT_LIST = [
     'A',
     'R',
     'N',
@@ -29,10 +29,10 @@ class Score(dict):
 
     def __repr__(self):
         string = "    "
-        string += "   ".join(sortList) + "\n"
-        for i in sortList:
+        string += "   ".join(SORT_LIST) + "\n"
+        for i in SORT_LIST:
             string += i
-            for j in sortList:
+            for j in SORT_LIST:
                 string += "{0:>4}".format(self[i, j])
             string += "\n"
         return string
@@ -46,10 +46,10 @@ class Score(dict):
         with open(filename) as f:
             for line in f:
                 if line[0] == ' ':
-                    up = line.split()
+                    firstRaw = line.split()
                 elif line[0] != '#':
                     head = line[0]
                     data = line[1:].split()
                     for i in range(len(data)):
-                        matrice[up[i], head] = data[i]
+                        matrice[firstRaw[i], head] = data[i]
         return matrice
