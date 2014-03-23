@@ -58,11 +58,12 @@ class Score(dict):
         matrix = Score()
         with open(filename) as f:
             for line in f:
-                if line[0] == ' ':
-                    firstRaw = line.split()
-                elif line[0] != '#':
-                    head = line[0]
-                    data = line[1:].split()
-                    for i in range(len(data)):
-                        matrix[firstRaw[i], head] = data[i]
+                if len(line) > 0:
+                    if line[0] == ' ':
+                        firstRaw = line.split()
+                    elif line[0] != '#':
+                        head = line[0]
+                        data = line[1:].split()
+                        for i in range(len(data)):
+                            matrix[firstRaw[i], head] = data[i]
         return matrix

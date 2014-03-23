@@ -25,12 +25,13 @@ class Sequence(list):
         """
         with open(filename) as f:
             data = ""
-            line = f.readline()
-            if line[0] != '>':
-                data += line.strip("\n")
             for line in f:
-                if line[0] != '>':
-                    data += line.strip("\n")
-                else:
-                    yield Sequence(data)
-                    data = ""
+                if line[0] == '>':
+                    break
+            for line in f:
+                if len(line) > 0:
+                    if line[0] != '>':
+                        data += line.strip("\n")
+                    else:
+                        yield Sequence(data)
+                        data = ""
