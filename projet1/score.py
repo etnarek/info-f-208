@@ -65,5 +65,5 @@ class Score(dict):
                         head = line[0]
                         data = line[1:].split()
                         for i in range(len(data)):
-                            matrix[firstRaw[i], head] = data[i]
+                            matrix[firstRaw[i], head] = int(data[i])
         return matrix
