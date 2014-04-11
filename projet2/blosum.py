@@ -29,7 +29,7 @@ def findGroups(sequences, percentage):
                         group.append(sequence)
                         found = True
                         break
-                if found:
+                if not found:
                     break
             else:
                 groups.append([sequence])
@@ -54,21 +54,26 @@ def weightedGroup(i, groups):
     return 1 / len(groups[groupNb])
 
 
+def colGroups(groups, i):
+    col = []
+    for group in groups:
+        tmp = []
+        for seq in group:
+            tmp.append(seq[i])
+        col.append(tmp)
+    return col
 
 def frequence(protein1, protein2, groups):
     summ = 0
-    for i in range(len(groups[0][0])):
-        col = map(lambda x: x[i], groups)
-        for (i, prot) in enumerate(col):
-            if prot == protein1:
-                start = 0
-                if protein1 == protein2:
-                    start = i
-                for j in range(start, len(col)):
-                    if j != i and col[j] == protein2 and\
-                       calcGroup(i, groups) != calcGroup(j, groups):
-                        summ += weightedGroup(i, groups) *\
-                                weightedGroup(j, groups)
+    print("len :", len(groups[0][0]))
+    for k in range(len(groups[0][0])):
+        #print("k: ", k)
+        col = colGroups(groups, k)
+        for i in col:
+            for j in col:
+                if i != j:
+                    summ += i.count(protein1)/len(i) *\
+                            j.count(protein2)/len(j)
     return summ
 
 def weightedMatrix(groups, proteinList):
@@ -76,7 +81,8 @@ def weightedMatrix(groups, proteinList):
     for i in range(len(proteinList)):
         matrix.append([0] * len(proteinList))
         for j in range(len(proteinList)):
-            matrix[i][j] = frequence(i, j, groups)
+            print(i, j)
+            matrix[i][j] = frequence(proteinList[i], proteinList[j], groups)
     return matrix
 
 def matrixAverage(matrixes):
@@ -138,19 +144,39 @@ def calcEndMatrix(matrix):
             matrix[i][j] = logChance(copyMatrix, i, j)
     return matrix
 
+def afficherMatrice(matrice):
+
+    indiceLigne = 0
+
+    while (indiceLigne != len(matrice)):
+        indiceColonne = 0
+        while (indiceColonne != len(matrice)):
+            print(round(matrice[indiceLigne][indiceColonne]), end=' ' *
+                  (4 - len(str(round(matrice[indiceLigne][indiceColonne])))))
+            indiceColonne = indiceColonne + 1
+        indiceLigne = indiceLigne + 1
+        print()
+
 def main():
     matrixes = []
     fileList = ["PR00109_0.txt", "PR00109_1.txt", "PR00109_2.txt", "PR00109_3.txt", "PR00109_4.txt"]
-    percentage = 0
+    percentage = 0.7
     proteinList = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
     for fileName in fileList:
         sequences = fromFile(fileName)
         groups = findGroups(sequences, percentage)
+        for group in groups:
+            print(len(group))
         matrixes.append(weightedMatrix(groups, proteinList))
+        print(0)
+    print(1)
     matrix = matrixAverage(matrixes)
+    print(2)
     matrix = occurenceMatrix(matrix)
+    print(3)
     matrix = calcEndMatrix(matrix)
-    print(matrix)
+    print(4)
+    afficherMatrice(matrix)
 
 if __name__=='__main__':
     main()
