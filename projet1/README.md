@@ -1,21 +1,10 @@
 #Mini projet 1:
 L’alignement des séquences et la programmation dynamique
 
-## Partie 1:
-Création des structures de données.
-Il faut créer les structures de données suivante:
+pour lancer ce projet, vous devez lancer en terminal:
 
-* un ADT séquence qui représente une séquence d’acides aminés et tous les opérations qu’on peut exécuter sur une séquence.
-* un ADT score qui représente une matrice de substitution et les opérations qu’on peut exécuter sur cette matrice.
+    python3 globalResolution.py fichiers_contenant_les_sequences ficheir_contenant_la_matrice_de_substitution pénalité_d_ouverture penalité_d_extention 
 
-Nous avons comme liens les deux liens suivant:
+example:
 
-* http://www.bioinformatics.nl/tools/pam.html
-* http://blocks.fhcrc.org/blocks/uploads/blosum/
-
-Pour créer les matrices PAM et BLOSUM.
-
-On peut utiliser les fichiers fichier PDZ-sequences.fasta et MAGUK-sequences.fasta pour tester le parser. Ils seront joint dans le dossier data.
-
-## Partie 2:
-A venir.
+    python3 globalResolution.py data/PDZ-sequences.fasta data/blosum62.txt 14 4
