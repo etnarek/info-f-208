@@ -91,7 +91,7 @@ def aligne(seq1, seq2, F, S, I, E):
     print(alignChar)
     print(align2)
     print("% d'identité: {}".format(identity/max(len(seq1), len(seq2))))
-    print("score global: {}".format(globalScore))
+    print("score local: {}".format(globalScore))
     return align1, align2, alignChar, identity, globalScore
 
 def main():
