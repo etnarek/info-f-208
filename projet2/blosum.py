@@ -1,3 +1,4 @@
+from score import Score
 from copy import deepcopy
 from math import log
 
@@ -77,46 +78,45 @@ def frequence(protein1, protein2, groups):
     return summ
 
 def weightedMatrix(groups, proteinList):
-    matrix = []
-    for i in range(len(proteinList)):
-        matrix.append([0] * len(proteinList))
-        for j in range(len(proteinList)):
-            print(i, j)
-            matrix[i][j] = frequence(proteinList[i], proteinList[j], groups)
+    matrix = Score()
+    for i in proteinList:
+        for j in proteinList:
+            matrix[i, j] = frequence(i, j, groups)
     return matrix
 
 def matrixAverage(matrixes):
-    score = [[0 for i in range (20)] for j in range(20)]
-    for i in range(len(matrixes[0])):
-        for j in range(len(matrixes[0][0])):
-            for n in range(len(matrixes)):
-
-                score[i][j] += matrixes[n][i][j]
-            score[i][j] = score[i][j] / len(matrixes)
+    score = Score()
+    for matrix in matrixes:
+        for i, j in matrix.keys():
+            print(i, j)
+            score[i, j] = matrix[i, j] + score.get((i, j), 0)
+    for i, j in score.keys():
+        score[i, j] /= len(matrixes)
     return score
 
 def sumUpPartMatrix(matrix):
     summ = 0
-    for i in range(len(matrix)):
-        for j in range(len(matrix[i])):
-            summ += matrix[i][j]
+    for i, j in matrix.keys():
+        summ += matrix[i, j]
     return summ
 
 def occurenceMatrix(matrix):
     sumUpPart = sumUpPartMatrix(matrix)
     if(sumUpPart !=0):
-        for i in range(len(matrix)):
-            for j in range(len(matrix[i])):
-                matrix[i][j] = matrix[i][j] / sumUpPart
+        for i, j in matrix.keys():
+            matrix[i, j] = matrix[i, j] / sumUpPart
     return matrix
 
 def residueFrequence(matrix, i):
     summ = 0
-    for j in range(len(matrix)):
+    keys = matrix.keys()
+    keys_list = []
+    keys_list = [x[0] for x in keys if x[0] not in keys_list]
+    for j in keys_list:
         if i != j:
-            summ += matrix[j][i]
+            summ += matrix[j, i]
     summ /= 2
-    summ += matrix[i][i]
+    summ += matrix[i, i]
     return summ
 
 
@@ -129,19 +129,18 @@ def alignementFrequence(matrix, i, j):
 
 def logChance(matrix, i, j):
     try:
-        if matrix[i][j] / alignementFrequence(matrix, i, j) == 0:
+        if matrix[i, j] / alignementFrequence(matrix, i, j) == 0:
             res = 0
         else:
-            res = 2 * log(matrix[i][j] / alignementFrequence(matrix, i, j), 2)
+            res = 2 * log(matrix[i, j] / alignementFrequence(matrix, i, j), 2)
     except(ZeroDivisionError):
         res = 0
     return res
 
 def calcEndMatrix(matrix):
     copyMatrix = deepcopy(matrix)
-    for i in range(len(matrix)):
-        for j in range(len(matrix[i])):
-            matrix[i][j] = logChance(copyMatrix, i, j)
+    for i, j in matrix.keys():
+        matrix[i, j] = logChance(copyMatrix, i, j)
     return matrix
 
 def afficherMatrice(matrice):
