@@ -27,7 +27,6 @@ def writeBlocks(blocks, filename):
                 f.write("%s\n" % line)
 
 def main():
-    print("Hello")
     filename = sys.argv[1]
     blocks = div(filename)
     writeBlocks(blocks, filename)
