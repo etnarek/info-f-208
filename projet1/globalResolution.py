@@ -103,25 +103,35 @@ def aligne(seq1, seq2, F, S, I, E):
     print(align1)
     print(alignChar)
     print(align2)
-    print(identity)
-    print(globalScore)
+    print("% d'identité: {}".format(identity/max(len(seq1), len(seq2))))
+    print("score global: {}".format(globalScore))
     return align1, align2, alignChar, identity, globalScore
 
 
 def main():
     fileName = sys.argv[1]
-    score = Score.fromFile(fileName)
-    fileName = sys.argv[2]
     seq = list(Sequence.fromFile(fileName))
-    seq1 = seq[0]
-    seq2 = seq[1]
+    fileName = sys.argv[2]
+    score = Score.fromFile(fileName)
+    I = int(sys.argv[3])
+    E = int(sys.argv[4])
 
-    matrix = createMatrix(seq1, seq2, 14, 4, score)
-    for i in matrix:
-        for j in i:
-            print("{0:<5}".format(j[0]), end="")
-        print()
-    aligne(seq1, seq2, matrix, score, 14, 4)
+    for i in range(len(seq)):
+        seq1 = seq[i]
+        for j in range(i + 1, len(seq)):
+            seq2 = seq[j]
+            matrix = createMatrix(seq1, seq2, I, E, score)
+            aligne(seq1, seq2, matrix, score, I, E)
+            print()
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) == 5:
+        main()
+    else:
+        print("Pour utiliser ce programme, il faut donner les information suivante:")
+        print("Le fichier contenant les sequences")
+        print("Le fichier contenant la matrice de substitution")
+        print("La valeur d'initialisation d'un gap")
+        print("La valeur pour continuer un gap")
+        print("\nExample d'utilisation:")
+        print("> python3 globalResolution.py data/PDZ-sequences.fasta data/blosum62.txt 14 4")
