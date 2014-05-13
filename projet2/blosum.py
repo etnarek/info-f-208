@@ -1,3 +1,4 @@
+import sys
 from score import Score
 from copy import deepcopy
 from math import log
@@ -36,25 +37,6 @@ def findGroups(sequences, percentage):
                 groups.append([sequence])
     return groups
 
-def calcGroup(i, groups):
-    groupNb = 0
-    pos = len(groups[groupNb])
-    for group in groups:
-        if i >= pos:
-            groupNb += 1
-            pos += len(groups[groupNb])
-    return groupNb
-
-def weightedGroup(i, groups):
-    groupNb = 0
-    pos = len(groups[groupNb])
-    for group in groups:
-        if i >= pos:
-            groupNb += 1
-            pos += len(groups[groupNb])
-    return 1 / len(groups[groupNb])
-
-
 def colGroups(groups, i):
     col = []
     for group in groups:
@@ -66,9 +48,7 @@ def colGroups(groups, i):
 
 def frequence(protein1, protein2, groups):
     summ = 0
-    print("len :", len(groups[0][0]))
     for k in range(len(groups[0][0])):
-        #print("k: ", k)
         col = colGroups(groups, k)
         for i in col:
             for j in col:
@@ -88,7 +68,6 @@ def matrixAverage(matrixes):
     score = Score()
     for matrix in matrixes:
         for i, j in matrix.keys():
-            print(i, j)
             score[i, j] = matrix[i, j] + score.get((i, j), 0)
     for i, j in score.keys():
         score[i, j] /= len(matrixes)
@@ -143,40 +122,35 @@ def calcEndMatrix(matrix):
         matrix[i, j] = logChance(copyMatrix, i, j)
     return matrix
 
-def afficherMatrice(matrice):
-
-    indiceLigne = 0
-
-    while (indiceLigne != len(matrice)):
-        indiceColonne = 0
-        while (indiceColonne != len(matrice)):
-            print(round(matrice[indiceLigne][indiceColonne]), end=' ' *
-                  (4 - len(str(round(matrice[indiceLigne][indiceColonne])))))
-            indiceColonne = indiceColonne + 1
-        indiceLigne = indiceLigne + 1
+def printMatrix(matrix, proteinList):
+    print("    ", end="")
+    for i in proteinList:
+        print("{0:>6}".format(i), end="")
+    print()
+    for i in proteinList:
+        print("{0:>4}".format(i), end="")
+        for j in proteinList:
+            print("{0:>6.2f}".format(matrix[i, j]), end="")
         print()
+
 
 def main():
     matrixes = []
-    fileList = ["PR00109_0.txt", "PR00109_1.txt", "PR00109_2.txt", "PR00109_3.txt", "PR00109_4.txt"]
-    percentage = 0.7
+    percentage = float(sys.argv[1])
+    fileList = sys.argv[2:]
     proteinList = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
     for fileName in fileList:
         sequences = fromFile(fileName)
         groups = findGroups(sequences, percentage)
-        for group in groups:
-            print(len(group))
         matrixes.append(weightedMatrix(groups, proteinList))
-        print(0)
-    print(1)
     matrix = matrixAverage(matrixes)
-    print(2)
     matrix = occurenceMatrix(matrix)
-    print(3)
     matrix = calcEndMatrix(matrix)
-    print(4)
-    afficherMatrice(matrix)
+    printMatrix(matrix, proteinList)
 
 if __name__=='__main__':
-    main()
+    if len(sys.argv) > 3:
+        main()
+    else:
+        print("Vous n'avez pas donné assez d'argument, il faut au moins le pourcentage et puis au moins un chemin vers un fichier de type BLOCKS (il y a un parseur inclu à partir de fichier fasta).")
 
