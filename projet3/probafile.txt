@@ -1,0 +1,27 @@
+# Fichier reprennant les pourcentages de chance de retrouver un AA
+# dans une séquence quelconque. 
+# B, Z, et X ont été légèrement modifiés afin de ne pas provoquer de 
+# ZeroDivisionError.
+A 8.28
+R 5.53
+N 4.05
+D 5.45
+C 1.36
+Q 3.94
+E 6.76
+G 7.09
+H 2.27
+I 5.99
+L 9.67
+K 5.85
+M 2.43
+F 3.86
+P 4.68
+S 6.50
+T 5.32
+W 1.07
+Y 2.91
+V 6.87
+B 0.00
+Z 0.00
+X 0.00
