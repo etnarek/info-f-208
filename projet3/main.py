@@ -23,36 +23,37 @@ def getOccurences(filename):
 
 def getProba(filename):
     proba = {}
+    exclude = []
     with open(filename) as f:
         for l in f:
             if l[0] != "#":
                 aa, prob = l.split(' ')
-                proba[aa] = float(prob) / 100
-    return proba
+                if float(prob) != 0:
+                    proba[aa] = float(prob) / 100
+                else:
+                    exclude.append(aa)
+    return proba, exclude
 
 
-def getPSSM(occurences, proba, beta, nbSeq):
+def getPSSM(occurences, proba, exclude, beta, nbSeq):
     PSSM = []
     consensus = Sequence()
     for i in range(len(occurences)):
         PSSM.append({})
         muaMax = -float("inf")
-        aaMax = ""
+        aaMax = "-"
         for aa in proba.keys():
-            qua = (occurences[i].get(aa, 0) + beta * proba[aa])
-            qua /= (nbSeq + beta)
-            if qua == 0:
-                mua = -float("inf")
-            elif proba[aa] == 0:
-                mua = float("inf")
-            else:
+            if aa not in exclude:
+                qua = (occurences[i].get(aa, 0) + beta * proba[aa])
+                qua /= (nbSeq + beta)
                 mua = log(qua / proba[aa], 10)
-            PSSM[i][aa] = mua
-            if mua > muaMax:
-                muaMax = mua
-                aaMax = aa
+                PSSM[i][aa] = mua
+                if mua > muaMax:
+                    muaMax = mua
+                    aaMax = aa
         consensus.append(aaMax)
     return PSSM, consensus
+
 
 def printPSSM(PSSM):
     print("\n===== PSSM =====\n")
@@ -71,12 +72,12 @@ def main(args):
     probaFilename = args.probaFilename
     occurences, nbSeq = getOccurences(sequenceFilename)
 
-    proba = getProba(probaFilename)
+    proba, exclude = getProba(probaFilename)
     beta = sqrt(nbSeq)
     if args.beta:
         beta = args.beta
 
-    PSSM, consensus = getPSSM(occurences, proba, beta, nbSeq)
+    PSSM, consensus = getPSSM(occurences, proba, exclude, beta, nbSeq)
     print("\n===== consensus =====\n")
     print(consensus)
     printPSSM(PSSM)
