@@ -33,7 +33,7 @@ def getProba(filename):
 
 def getPSSM(occurences, proba, beta, nbSeq):
     PSSM = []
-    consensus = []
+    consensus = Sequence()
     for i in range(len(occurences)):
         PSSM.append({})
         muaMax = -float("inf")
@@ -59,45 +59,29 @@ def main(args):
     sequenceFilename = args.sequenceFilename
     probaFilename = args.probaFilename
     occurences, nbSeq = getOccurences(sequenceFilename)
-    print(occurences)
-    print(nbSeq)
 
     proba = getProba(probaFilename)
-    print(proba)
     beta = sqrt(nbSeq)
     if args.beta:
         beta = args.beta
-    print(beta)
 
     PSSM, consensus = getPSSM(occurences, proba, beta, nbSeq)
     print(consensus)
 
-    moy = 0
-    maxm = -float("inf")
-    i = 0
     key = PSSM[0].keys()
     for k in key:
-        print(k, end=" ")
+        print("{:^7}".format(k), end=" ")
     print()
     for col in PSSM:
         for m in key:
-            print("{:.4f}".format(col[m]), end=" ")
-            if col[m] != float("inf") and col[m] != -float("inf"):
-                moy += col[m]
-                i += 1
-                if col[m] > maxm:
-                    maxm = col[m]
+            print("{: 7.3f}".format(col[m]), end=" ")
         print()
-
-    print("moyenne: ", moy/i)
-    print("max :", maxm)
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("sequenceFilename", help="The file containing all the sequences to parse.")
     parser.add_argument("probaFilename", help="The file containing the probability for all amino acid.")
-    parser.add_argument("-b", "--beta", help="Set the value to use for beta (default = sqrt(nombre de sequences).", type=int)
+    parser.add_argument("-b", "--beta", help="Set the value to use for beta (default = sqrt(nombre de sequences).", type=float)
 
     args = parser.parse_args()
     main(args)
