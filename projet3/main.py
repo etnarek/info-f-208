@@ -1,6 +1,7 @@
 
 from math import log, sqrt
 from sequence import Sequence
+import argparse
 
 
 def getOccurences(filename):
@@ -54,7 +55,9 @@ def getPSSM(occurences, proba, beta, nbSeq):
     return PSSM, consensus
 
 
-def main(sequenceFilename, probaFilename):
+def main(args):
+    sequenceFilename = args.sequenceFilename
+    probaFilename = args.probaFilename
     occurences, nbSeq = getOccurences(sequenceFilename)
     print(occurences)
     print(nbSeq)
@@ -62,7 +65,8 @@ def main(sequenceFilename, probaFilename):
     proba = getProba(probaFilename)
     print(proba)
     beta = sqrt(nbSeq)
-    beta = 1
+    if args.beta:
+        beta = args.beta
     print(beta)
 
     PSSM, consensus = getPSSM(occurences, proba, beta, nbSeq)
@@ -90,4 +94,10 @@ def main(sequenceFilename, probaFilename):
 
 
 if __name__ == "__main__":
-    main("msaresults-MUSCLE.fasta", "probafile.txt")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("sequenceFilename", help="The file containing all the sequences to parse.")
+    parser.add_argument("probaFilename", help="The file containing the probability for all amino acid.")
+    parser.add_argument("-b", "--beta", help="Set the value to use for beta (default = sqrt(nombre de sequences).", type=int)
+
+    args = parser.parse_args()
+    main(args)
