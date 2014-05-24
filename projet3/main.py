@@ -54,6 +54,17 @@ def getPSSM(occurences, proba, beta, nbSeq):
         consensus.append(aaMax)
     return PSSM, consensus
 
+def printPSSM(PSSM):
+    print("\n===== PSSM =====\n")
+    key = PSSM[0].keys()
+    for k in key:
+        print("{:^7}".format(k), end=" ")
+    print()
+    for col in PSSM:
+        for m in key:
+            print("{: 7.3f}".format(col[m]), end=" ")
+        print()
+
 
 def main(args):
     sequenceFilename = args.sequenceFilename
@@ -66,16 +77,10 @@ def main(args):
         beta = args.beta
 
     PSSM, consensus = getPSSM(occurences, proba, beta, nbSeq)
+    print("\n===== consensus =====\n")
     print(consensus)
+    printPSSM(PSSM)
 
-    key = PSSM[0].keys()
-    for k in key:
-        print("{:^7}".format(k), end=" ")
-    print()
-    for col in PSSM:
-        for m in key:
-            print("{: 7.3f}".format(col[m]), end=" ")
-        print()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
