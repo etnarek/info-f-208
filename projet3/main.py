@@ -58,13 +58,29 @@ def getPSSM(occurences, proba, exclude, beta, nbSeq):
 def printPSSM(PSSM):
     print("\n===== PSSM =====\n")
     key = PSSM[0].keys()
+    print("     ", end=" ")
     for k in key:
         print("{:^7}".format(k), end=" ")
     print()
-    for col in PSSM:
+    for i, col in enumerate(PSSM):
+        print("{:5}".format(i), end=" ")
         for m in key:
             print("{: 7.3f}".format(col[m]), end=" ")
         print()
+
+
+def savePSSM(PSSM, outFilename):
+    with open(outFilename, 'w') as f:
+        key = PSSM[0].keys()
+        f.write("   ")
+        for k in range(len(PSSM)):
+            f.write("{:^7} ".format(k))
+        f.write("\n")
+        for m in key:
+            f.write("{:2} ".format(m))
+            for i, col in enumerate(PSSM):
+                f.write("{: 7.3f} ".format(col[m]))
+            f.write("\n")
 
 
 def main(args):
@@ -82,12 +98,16 @@ def main(args):
     print(consensus)
     printPSSM(PSSM)
 
+    if args.outFile:
+        savePSSM(PSSM, args.outFile)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("sequenceFilename", help="The file containing all the sequences to parse.")
     parser.add_argument("probaFilename", help="The file containing the probability for all amino acid.")
     parser.add_argument("-b", "--beta", help="Set the value to use for beta (default = sqrt(nombre de sequences).", type=float)
+    parser.add_argument("-o", "--outFile", help="The file to save the PSSM matrix.")
 
     args = parser.parse_args()
     main(args)
