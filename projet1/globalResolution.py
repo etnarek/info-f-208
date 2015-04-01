@@ -5,12 +5,12 @@ from sequence import Sequence
 from score import Score
 
 def createMatrix(seq1, seq2, I, E, score):
-    matrix = [[[0, 0, 0] for j in seq2] for i in seq1]
-    matrix[0][0] = [0, -float("inf"), -float("inf")]
+    matrix = [[[0, 0, 0, ""] for j in seq2] for i in seq1]
+    matrix[0][0] = [0, -float("inf"), -float("inf"), ""]
     for i in range(1, len(seq1)):
-        matrix[i][0] = [-float("inf"), -I - (i-1)*E, -float("inf")]
+        matrix[i][0] = [-float("inf"), -I - (i-1)*E, -float("inf"), ""]
     for i in range(1, len(seq2)):
-        matrix[0][i] = [-float("inf"), -float("inf"), -I - (i-1)*E]
+        matrix[0][i] = [-float("inf"), -float("inf"), -I - (i-1)*E, ""]
 
     for i in range(1, len(seq1)):
         for j in range(1, len(seq2)):
@@ -25,6 +25,13 @@ def createMatrix(seq1, seq2, I, E, score):
             matrix[i][j][2] = W
 
             S = matrix[i-1][j-1][0] + score[seq1[i], seq2[j]]
+            if S >= V or S >= W:
+                matrix[i][j][3] = "D"
+            elif V >= W:
+                matrix[i][j][3] = "L"
+            else:
+                matrix[i][j][3] = "U"
+
             S = max(S, V, W)
             matrix[i][j][0] = S
     return matrix
@@ -38,10 +45,9 @@ def aligne(seq1, seq2, F, S, I, E):
     identity = 0
     globalScore = 0
     while i > 0 and j > 0:
-        if(F[i][j][0] == F[i - 1][j - 1][0] + S[seq1[i], seq2[j]]):
+        if(F[i][j][3] == "D"):
             align1 = seq1[i] + align1
             align2 = seq2[j] + align2
-            globalScore += S[seq1[i], seq2[j]]
             if seq1[i] == seq2[j]:
                 alignChar = ":" + alignChar
                 identity += 1
@@ -52,36 +58,21 @@ def aligne(seq1, seq2, F, S, I, E):
             i -= 1
             j -= 1
 
-        elif F[i][j][0] == F[i-1][j][0] - I:
+        elif F[i][j][3] == "L":
             align1 = seq1[i] + align1
             align2 = "-" + align2
             alignChar = " " + alignChar
-            globalScore -= I
-            i -= 1
-        elif F[i][j][0] == F[i-1][j][1] - E:
-            align1 = seq1[i] + align1
-            align2 = "-" + align2
-            alignChar = " " + alignChar
-            globalScore -= E
             i -= 1
 
-        elif F[i][j][0] == F[i][j-1][0] - I:
+        elif F[i][j][3] == "U":
             align1 = "-" + align1
             align2 = seq2[j] + align2
             alignChar = " " + alignChar
-            globalScore -= I
-            j -= 1
-        elif F[i][j][0] == F[i][j-1][2] - E:
-            align1 = "-" + align1
-            align2 = seq2[j] + align2
-            alignChar = " " + alignChar
-            globalScore -= E
             j -= 1
 
     if i == 0 and j == 0:
         align1 = seq1[i] + align1
         align2 = seq2[j] + align2
-        globalScore += S[seq1[i], seq2[j]]
         if seq1[i] == seq2[j]:
             alignChar = ":" + alignChar
             identity += 1
@@ -100,10 +91,11 @@ def aligne(seq1, seq2, F, S, I, E):
         align1 = "-" + align1
         align2 = seq2[j] + align2
         j -= 1
+    globalScore = F[len(F)-1][len(F[0])-1][0]
     print(align1)
     print(alignChar)
     print(align2)
-    print("% d'identité: {}".format(identity/max(len(seq1), len(seq2))))
+    print("% d'identité: {}".format(identity * 100/max(len(seq1), len(seq2))))
     print("score global: {}".format(globalScore))
     return align1, align2, alignChar, identity, globalScore
 
@@ -116,11 +108,12 @@ def main():
     I = int(sys.argv[3])
     E = int(sys.argv[4])
 
-    for i in range(len(seq)):
+    for i in range(1):
         seq1 = seq[i]
-        for j in range(i + 1, len(seq)):
+        for j in range(i + 1, 2):
             seq2 = seq[j]
             matrix = createMatrix(seq1, seq2, I, E, score)
+            print(matrix)
             aligne(seq1, seq2, matrix, score, I, E)
             print()
 
