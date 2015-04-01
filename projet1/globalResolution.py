@@ -51,6 +51,48 @@ def createMatrix(seq1, seq2, openingPenality, extendingPenality, scoreMatrix, lo
             matrix[i][j][0] = S
     return matrix
 
+def bactrackAligne(seq1, seq2, matrix, scoreMatrix, i=-1, j=-1):
+    paths = []
+    if "E" in matrix[i][j][3]:
+        return [["", "", ""]]
+    if "D" in matrix[i][j][3]:
+        s1 = seq1[i]
+        s2 = seq2[j]
+        char = ""
+        if s1 == s2:
+            char = ":"
+        elif scoreMatrix[s1, s2] >= 0:
+            char = "."
+        else:
+            char = " "
+        pats = bactrackAligne(seq1, seq2, matrix, scoreMatrix, i-1, j-1)
+        for pat in pats:
+            pat[0] = pat[0] + s1
+            pat[1] = pat[1] + s2
+            pat[2] = pat[2] + char
+            paths.append(pat)
+    if "U" in matrix[i][j][3]:
+        s1 = "-"
+        s2 = seq2[j]
+        char = " "
+        pats = bactrackAligne(seq1, seq2, matrix, scoreMatrix, i, j-1)
+        for pat in pats:
+            pat[0] = pat[0] + s1
+            pat[1] = pat[1] + s2
+            pat[2] = pat[2] + char
+            paths.append(pat)
+    if "L" in matrix[i][j][3]:
+        s1 = seq1[i]
+        s2 = "-"
+        char = " "
+        pats = bactrackAligne(seq1, seq2, matrix,  scoreMatrix, i-1, j)
+        for pat in pats:
+            pat[0] = pat[0] + s1
+            pat[1] = pat[1] + s2
+            pat[2] = pat[2] + char
+            paths.append(pat)
+    return paths
+
 
 def aligne(seq1, seq2, F, S, I, E):
     align1 = ""
@@ -129,8 +171,9 @@ def main():
         for j in range(i + 1, 2):
             seq2 = seq[j]
             matrix = createMatrix(seq1, seq2, I, E, score)
-            print(matrix)
-            aligne(seq1, seq2, matrix, score, I, E)
+            #print(matrix)
+            #aligne(seq1, seq2, matrix, score, I, E)
+            print(bactrackAligne(seq1, seq2, matrix, score))
             print()
 
 if __name__ == '__main__':
