@@ -36,20 +36,20 @@ class Score(dict):
     The wright type of matrix are PAM and BLOSUM.
     """
 
-    #def __repr__(self, proteinList = None):
-    #    string = "    "
-    #    string += "   ".join(SORT_LIST) + "\n"
-    #    if proteinList == None:
-    #        proteinList = SORT_LIST
-    #    for i in proteinList:
-    #        string += i
-    #        for j in proteinList:
-    #            string += "{0:>4}".format(self[i, j])
-    #        string += "\n"
-    #    return string
+    def __repr__(self, proteinList=None):
+        string = "    "
+        string += "   ".join(SORT_LIST) + "\n"
+        if proteinList == None:
+            proteinList = SORT_LIST
+        for i in proteinList:
+            string += i
+            for j in proteinList:
+                string += "{0:>4}".format(self.get((i, j), 0))
+            string += "\n"
+        return string
 
-    #def __str__(self, proteinList = None):
-    #    return self.__repr__(proteinList)
+    def __str__(self, proteinList=None):
+        return self.__repr__(proteinList)
 
     @staticmethod
     def fromFile(filename):
