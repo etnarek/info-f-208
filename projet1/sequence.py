@@ -30,7 +30,7 @@ class Sequence(list):
         for line in files:
             if len(line) > 0:
                 if line[0] != '>':
-                    data += line.strip("\n")
+                    data += line.strip("\n").replace(" ", "")
                 else:
                     yield Sequence(data)
                     data = ""
