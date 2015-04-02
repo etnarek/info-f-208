@@ -1,156 +1,163 @@
 import sys
+import argparse
 from score import Score
-from copy import deepcopy
 from math import log
 
-def fromFile(fileName):
-    with open(fileName, 'r') as f:
-        sequences = []
-        for line in f:
-            sequences.append(line.strip())
-    return sequences
+def blocksFromFiles(files):
+    """load and return blocks from the given files
+    """
+    blocks = []
+    for f in files:
+        sequences = f.readlines()
+        sequences = list(map(lambda x: x.strip(), sequences))
+        blocks.append(sequences)
+    return blocks
 
-def similar(seq1, seq2, percentage):
-    same = 0
-    for i in range(min(len(seq1), len(seq2))):
-        if(seq1[i] == seq2[i]):
-            same += 1
-    same = same / max(len(seq1), len(seq2))
-    return same >= percentage
-
-def findGroups(sequences, percentage):
-    groups = []
-    for sequence in sequences:
-        if len(groups) == 0:
-            groups.append([sequence])
+def haveEnoughtIdentity(seq1, seq2, percentage):
+    """Calculate identity between two sequences
+    return True if identity between seq1 and seq2 > percentage%
+    """
+    identical = 0
+    different = 0
+    for aa1, aa2 in zip(seq1, seq2):
+        if aa1 == aa2:
+            identical += 1
+            if identical / float(len(seq1)) >= percentage / 100.0:
+                return True
         else:
-            found = False
-            for group in groups:
-                for seq in group:
-                    if similar(sequence, seq, percentage):
-                        group.append(sequence)
-                        found = True
-                        break
-                if not found:
-                    break
-            else:
-                groups.append([sequence])
+            different += 1
+            if different / float(len(seq1)) > 1 - (percentage / 100.0):
+                return False
+
+    return identical / float(len(seq1)) >= percentage / 100.0
+
+def canPlace(sequence, group, percentage):
+    """ Verify if a sequence can be placed in a given group with a percentage
+    """
+    for seq in group:
+        if haveEnoughtIdentity(seq, sequence, percentage):
+            return True
+    return False
+
+def placeInGroups(sequences, percentage):
+    """
+    Make groups with all the sequences
+    """
+    groups = []
+    for seq in sequences:
+        for group in groups:
+            if canPlace(seq, group, percentage):
+                group.append(seq)
+                break
+        else:
+            groups.append([seq])
     return groups
 
-def colGroups(groups, i):
-    col = []
-    for group in groups:
-        tmp = []
-        for seq in group:
-            tmp.append(seq[i])
-        col.append(tmp)
-    return col
-
-def frequence(protein1, protein2, groups):
-    summ = 0
-    for k in range(len(groups[0][0])):
-        col = colGroups(groups, k)
-        for i in col:
-            for j in col:
-                if i != j:
-                    summ += i.count(protein1)/len(i) *\
-                            j.count(protein2)/len(j)
-    return summ
-
-def weightedMatrix(groups, proteinList):
+def ponderateFrequencyMatrix(groups):
+    """
+    Return the weighted matrix for the groups
+    """
     matrix = Score()
-    for i in proteinList:
-        for j in proteinList:
-            matrix[i, j] = frequence(i, j, groups)
+    length = len(groups[0][0])
+    for i in range(length):
+        for iGroup, group in enumerate(groups):
+            for seq in group:
+                aa1 = seq[i]
+                for iOtherGroup, otherGroup in enumerate(groups):
+                    if iGroup != iOtherGroup:
+                        for otherSeq in otherGroup:
+                            aa2 = otherSeq[i]
+                            freq = (1 / len(group)) * (1 / len(otherGroup))
+                            if aa1 == aa2:
+                                freq = freq / 2
+                            matrix[aa1, aa2] = matrix.get((aa1, aa2), 0) + freq
     return matrix
 
-def matrixAverage(matrixes):
-    score = Score()
-    for matrix in matrixes:
-        for i, j in matrix.keys():
-            score[i, j] = matrix[i, j] + score.get((i, j), 0)
-    for i, j in score.keys():
-        score[i, j] /= len(matrixes)
-    return score
-
-def sumUpPartMatrix(matrix):
-    summ = 0
-    for i, j in matrix.keys():
-        summ += matrix[i, j]
-    return summ
-
-def occurenceMatrix(matrix):
-    sumUpPart = sumUpPartMatrix(matrix)
-    if(sumUpPart !=0):
-        for i, j in matrix.keys():
-            matrix[i, j] = matrix[i, j] / sumUpPart
-    return matrix
-
-def residueFrequence(matrix, i):
-    summ = 0
-    keys = matrix.keys()
-    keys_list = []
-    keys_list = [x[0] for x in keys if x[0] not in keys_list]
-    for j in keys_list:
-        if i != j:
-            summ += matrix[j, i]
-    summ /= 2
-    summ += matrix[i, i]
-    return summ
-
-
-def alignementFrequence(matrix, i, j):
-    if i == j:
-        freq = residueFrequence(matrix, j) ** 2
-    else:
-        freq = 2 * residueFrequence(matrix, i) * residueFrequence(matrix, j)
-    return freq
-
-def logChance(matrix, i, j):
-    try:
-        if matrix[i, j] / alignementFrequence(matrix, i, j) == 0:
-            res = 0
+def calculateFreqSum(matrix):
+    """
+    Calculate the sum of the frequencies of a matrix.
+    """
+    diag, tot = 0, 0
+    for key, val in matrix.items():
+        if key[0] == key[1]:
+            diag += val
         else:
-            res = 2 * log(matrix[i, j] / alignementFrequence(matrix, i, j), 2)
-    except(ZeroDivisionError):
-        res = 0
-    return res
+            tot += val
+    tot = tot / 2 + diag
+    return tot
 
-def calcEndMatrix(matrix):
-    copyMatrix = deepcopy(matrix)
-    for i, j in matrix.keys():
-        matrix[i, j] = logChance(copyMatrix, i, j)
-    return matrix
+def occurenceProbability(matrix):
+    """
+    Calculate the occurrence weighted matrix of a frequencies matrix
+    """
+    ponderate = Score()
+    freqSum = calculateFreqSum(matrix)
 
-def printMatrix(matrix, proteinList):
-    print("    ", end="")
-    for i in proteinList:
-        print("{0:>6}".format(i), end="")
-    print()
-    for i in proteinList:
-        print("{0:>4}".format(i), end="")
-        for j in proteinList:
-            print("{0:>6.2f}".format(matrix[i, j]), end="")
-        print()
+    for key, val in matrix.items():
+        ponderate[key] = val / freqSum
+    return ponderate
 
+def propability(matrix, aa):
+    """
+    give the probability of a replacement for an aa
+    """
+    prob = 0
+    for key, val in matrix.items():
+        if key[0] == aa and key[1] != aa:
+            prob += val / 2
+    return prob + matrix.get((aa, aa), 0)
 
-def main():
-    matrixes = []
-    percentage = float(sys.argv[1])
-    fileList = sys.argv[2:]
-    proteinList = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
-    for fileName in fileList:
-        sequences = fromFile(fileName)
-        groups = findGroups(sequences, percentage)
-        matrixes.append(weightedMatrix(groups, proteinList))
-    matrix = matrixAverage(matrixes)
-    matrix = occurenceMatrix(matrix)
-    matrix = calcEndMatrix(matrix)
-    printMatrix(matrix, proteinList)
+def expectedFrequency(matrix):
+    """
+    give the evolution matrix
+    """
+    expected = Score()
 
-if __name__=='__main__':
-    if len(sys.argv) > 3:
-        main()
-    else:
-        print("Vous n'avez pas donné assez d'argument, il faut au moins le pourcentage et puis au moins un chemin vers un fichier de type BLOCKS (il y a un parseur inclu à partir de fichier fasta).")
+    for key in matrix.keys():
+        if key[0] == key[1]:
+            expected[key] = propability(matrix, key[0]) ** 2
+        else:
+            expected[key] = 2 * propability(matrix, key[0]) * propability(matrix, key[1])
+    return expected
+
+def loggOddRatio(ponderate, expected, blosum):
+    """
+    return the log odd ratio matrix.
+    """
+    for key in ponderate.keys():
+        blosum[key] = blosum.get(key, 0) + 2 * log(ponderate[key] / expected[key], 2)
+    return blosum
+
+def average(blosum, nbBlocks):
+    """
+    Compute the average of the matrix by the number of blocks.
+    """
+    for key in blosum.keys():
+        blosum[key] = round(blosum[key] / nbBlocks)
+    return blosum
+
+def main(args):
+    percentage = args.identity
+    blosum = Score()
+    blocks = blocksFromFiles(args.blocks)
+
+    for sequences in blocks:
+        groups = placeInGroups(sequences, percentage)
+        frequencies = ponderateFrequencyMatrix(groups)
+        ponderate = occurenceProbability(frequencies)
+        expected = expectedFrequency(ponderate)
+        blosum = loggOddRatio(ponderate, expected, blosum)
+    blosum = average(blosum, len(blocks))
+    print(blosum)
+    if args.output:
+        args.output.write(str(blosum))
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Create blosum matrix from blocs")
+    parser.add_argument("identity", type=int, help="The percentage of identity that 2 sequences must have.")
+    parser.add_argument('blocks', type=argparse.FileType('r'), nargs='+', help="All the files each containing a block to use to create the blosum matrix.")
+    parser.add_argument('-o', "--output", type=argparse.FileType('w'), help="The file to write the generated matrix.")
+
+    args = parser.parse_args()
+    main(args)
 
