@@ -8,13 +8,13 @@ import argparse
 def createMatrix(seq1, seq2, openingPenality, extendingPenality, scoreMatrix, local=False):
     """ Create the matrix used to align 2 sequences given.
 
-    parameters: seq1, seq2 two sequences to be aligned
-    openingPenality the penality of creating a new gap
-    extendingPenality the penality of extending a gap
-    scoreMatrix the pam or blosum matrix used to aligne 2 sequences
-    local (default faulse) if we want a local alignement
+    Parameters: seq1, seq2 two sequences to be aligned
+    openingPenality the penalty of creating a new gap
+    extendingPenality the penalty of extending a gap
+    scoreMatrix the pam or blosum matrix used to align 2 sequences
+    local (default false) if we want a local alignment
 
-    retrun: the matrix used to make the alignement
+    Return: the matrix used to make the alignment
     """
 
     minimal = 0 if local else float("-inf")
@@ -113,13 +113,13 @@ def findMax(matrix):
 
 def localAlignement(seq1, seq2, openingPenality, extendingPenality, score, scoreName):
     """
-    Make a local alignement between two squences (seq1 ans seq2)
+    Make a local alignment between two sequences (seq1 ans seq2)
     """
     matrix = createMatrix(seq1, seq2, openingPenality, extendingPenality, score, True)
-    print("Local alignement between:")
+    print("Local alignment between:")
     print(seq1)
     print(seq2)
-    print("Using penality {}/{}".format(openingPenality, extendingPenality))
+    print("Using penalty {}/{}".format(openingPenality, extendingPenality))
     print("And substitution matrix: {}\n".format(scoreName.name))
     pos = findMax(matrix)
     for i in bactrackAligne(seq1, seq2, matrix, score, pos[0], pos[1]):
@@ -137,14 +137,14 @@ def localAlignement(seq1, seq2, openingPenality, extendingPenality, score, score
 
 def globalAlignement(seq1, seq2, openingPenality, extendingPenality, score, scoreName):
     """
-    Make a global alignement between two squences (seq1 ans seq2)
+    Make a global alignment between two sequences (seq1 ans seq2)
     """
     matrix = createMatrix(seq1, seq2, openingPenality, extendingPenality, score)
     globalScore = matrix[-1][-1][0]
-    print("Global alignement between:")
+    print("Global alignment between:")
     print(seq1)
     print(seq2)
-    print("Using penality {}/{}".format(openingPenality, extendingPenality))
+    print("Using penalty {}/{}".format(openingPenality, extendingPenality))
     print("And substitution matrix: {}\n".format(scoreName.name))
     for i in bactrackAligne(seq1, seq2, matrix, score, len(seq1), len(seq2)):
         ident = i[2].count(":") *100 / len(i[2])
@@ -184,14 +184,14 @@ def main(args):
             globalAlignement(seq1, seq2, openingPenality, extendingPenality, score, args.substitutionMatrix)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="")
+    parser = argparse.ArgumentParser(description="Make the global (or local) alignment between multiple sequences")
     parser.add_argument("sequenceFilename", type=argparse.FileType('r'), help="The file containing all the sequences to aligne.")
     parser.add_argument("substitutionMatrix", type=argparse.FileType('r'), help="The file containing the substitution matrix to use.")
-    parser.add_argument("openingPenality", type=int, help="The penality of opening a new gap.")
-    parser.add_argument("extendingPenality", type=int, help="The penality of extending a gap.")
-    parser.add_argument("-l", "--local", action="store_true", help="Does a local alignement instead of a global.")
+    parser.add_argument("openingPenality", type=int, help="The penalty of opening a new gap.")
+    parser.add_argument("extendingPenality", type=int, help="The penalty of extending a gap.")
+    parser.add_argument("-l", "--local", action="store_true", help="Does a local alignment instead of a global.")
     parser.add_argument("-1", "--nseq1", type=int, help="The number of the first sequence to parse in file (if None, all sequences).")
-    parser.add_argument("-2", "--nseq2", type=int, help="The number of the second sequence to aline in file (required if -1 is used).")
+    parser.add_argument("-2", "--nseq2", type=int, help="The number of the second sequence to align in file (required if -1 is used).")
 
     args = parser.parse_args()
     if args.nseq1 and not args.nseq2:
