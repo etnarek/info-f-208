@@ -1,6 +1,17 @@
 import sys
+import argparse
 from score import Score
 from math import log
+
+def blocksFromFiles(files):
+    """load and return blocks from the given files
+    """
+    blocks = []
+    for f in files:
+        sequences = f.readlines()
+        sequences = list(map(lambda x: x.strip(), sequences))
+        blocks.append(sequences)
+    return blocks
 
 def haveEnoughtIdentity(seq1, seq2, percentage):
     """Calculate identity between two sequences
@@ -21,12 +32,17 @@ def haveEnoughtIdentity(seq1, seq2, percentage):
     return identical / float(len(seq1)) >= percentage / 100.0
 
 def canPlace(sequence, group, percentage):
+    """ Verify if a sequence can be placed in a given group with a percentage
+    """
     for seq in group:
         if haveEnoughtIdentity(seq, sequence, percentage):
             return True
     return False
 
 def placeInGroups(sequences, percentage):
+    """
+    Make groups with all the sequences
+    """
     groups = []
     for seq in sequences:
         for group in groups:
@@ -38,6 +54,9 @@ def placeInGroups(sequences, percentage):
     return groups
 
 def ponderateFrequencyMatrix(groups):
+    """
+    Return the weighted matrix for the groups
+    """
     matrix = Score()
     length = len(groups[0][0])
     for i in range(length):
@@ -55,6 +74,9 @@ def ponderateFrequencyMatrix(groups):
     return matrix
 
 def calculateFreqSum(matrix):
+    """
+    Calculate the sum of the frequencies of a matrix.
+    """
     diag, tot = 0, 0
     for key, val in matrix.items():
         if key[0] == key[1]:
@@ -65,6 +87,9 @@ def calculateFreqSum(matrix):
     return tot
 
 def occurenceProbability(matrix):
+    """
+    Calculate the occurrence weighted matrix of a frequencies matrix
+    """
     ponderate = Score()
     freqSum = calculateFreqSum(matrix)
 
@@ -73,6 +98,9 @@ def occurenceProbability(matrix):
     return ponderate
 
 def propability(matrix, aa):
+    """
+    give the probability of a replacement for an aa
+    """
     prob = 0
     for key, val in matrix.items():
         if key[0] == aa and key[1] != aa:
@@ -80,6 +108,9 @@ def propability(matrix, aa):
     return prob + matrix.get((aa, aa), 0)
 
 def expectedFrequency(matrix):
+    """
+    give the evolution matrix
+    """
     expected = Score()
 
     for key in matrix.keys():
@@ -89,23 +120,44 @@ def expectedFrequency(matrix):
             expected[key] = 2 * propability(matrix, key[0]) * propability(matrix, key[1])
     return expected
 
-def loggOddRatio(ponderate, expected):
-    blosum = Score()
+def loggOddRatio(ponderate, expected, blosum):
+    """
+    return the log odd ratio matrix.
+    """
     for key in ponderate.keys():
-        blosum[key] = round(2 * log(ponderate[key] / expected[key], 2))
+        blosum[key] = blosum.get(key, 0) + 2 * log(ponderate[key] / expected[key], 2)
     return blosum
 
-def main():
-    sequences = ["ATCKQ", "SSCRN", "ATCRN", "TECRQ", "ASCKN", "SECEN", "SDCEQ"]
-    percentage = 50
+def average(blosum, nbBlocks):
+    """
+    Compute the average of the matrix by the number of blocks.
+    """
+    for key in blosum.keys():
+        blosum[key] = round(blosum[key] / nbBlocks)
+    return blosum
 
-    groups = placeInGroups(sequences, percentage)
-    frequencies = ponderateFrequencyMatrix(groups)
-    ponderate = occurenceProbability(frequencies)
-    expected = expectedFrequency(ponderate)
-    blosum = loggOddRatio(ponderate, expected)
+def main(args):
+    percentage = args.identity
+    blosum = Score()
+    blocks = blocksFromFiles(args.blocks)
+
+    for sequences in blocks:
+        groups = placeInGroups(sequences, percentage)
+        frequencies = ponderateFrequencyMatrix(groups)
+        ponderate = occurenceProbability(frequencies)
+        expected = expectedFrequency(ponderate)
+        blosum = loggOddRatio(ponderate, expected, blosum)
+    blosum = average(blosum, len(blocks))
     print(blosum)
+    if args.output:
+        args.output.write(str(blosum))
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Create blosum matrix from blocs")
+    parser.add_argument("identity", type=int, help="The percentage of identity that 2 sequences must have.")
+    parser.add_argument('blocks', type=argparse.FileType('r'), nargs='+', help="All the files each containing a block to use to create the blosum matrix.")
+    parser.add_argument('-o', "--output", type=argparse.FileType('w'), help="The file to write the generated matrix.")
+
+    args = parser.parse_args()
+    main(args)
 
