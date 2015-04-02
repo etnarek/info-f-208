@@ -18,20 +18,19 @@ class Sequence(list):
         return "".join(self)
 
     @staticmethod
-    def fromFile(filename):
+    def fromFile(files):
         """
         This method take a path to a file containing a amino acid sequence
         and generate Sequences from this file (generator).
         """
-        with open(filename) as f:
-            data = ""
-            for line in f:
-                if line[0] == '>':
-                    break
-            for line in f:
-                if len(line) > 0:
-                    if line[0] != '>':
-                        data += line.strip("\n")
-                    else:
-                        yield Sequence(data)
-                        data = ""
+        data = ""
+        for line in files:
+            if line[0] == '>':
+                break
+        for line in files:
+            if len(line) > 0:
+                if line[0] != '>':
+                    data += line.strip("\n")
+                else:
+                    yield Sequence(data)
+                    data = ""

@@ -50,20 +50,19 @@ class Score(dict):
         return repr(self)
 
     @staticmethod
-    def fromFile(filename):
+    def fromFile(files):
         """
         This method take a path to a file containing a matrix
         BLOSUM or PAM and return this matrix.
         """
         matrix = Score()
-        with open(filename) as f:
-            for line in f:
-                if len(line) > 0:
-                    if line[0] == ' ':
-                        firstRaw = line.split()
-                    elif line[0] != '#':
-                        head = line[0]
-                        data = line[1:].split()
-                        for i in range(len(data)):
-                            matrix[firstRaw[i], head] = int(data[i])
+        for line in files:
+            if len(line) > 0:
+                if line[0] == ' ':
+                    firstRaw = line.split()
+                elif line[0] != '#':
+                    head = line[0]
+                    data = line[1:].split()
+                    for i in range(len(data)):
+                        matrix[firstRaw[i], head] = int(data[i])
         return matrix
